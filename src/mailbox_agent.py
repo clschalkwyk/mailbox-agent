@@ -114,7 +114,7 @@ def read_messages(host: str, port: int, username: str, password: str, limit: int
     if limit < 1:
         raise ValueError("limit must be at least 1")
 
-    with imaplib.IMAP4_SSL(host, port) as connection:
+    with imaplib.IMAP4_SSL(host, port, ssl_context=ssl.create_default_context()) as connection:
         connection.login(username, password)
         status, _ = connection.select("INBOX", readonly=True)
         if status != "OK":

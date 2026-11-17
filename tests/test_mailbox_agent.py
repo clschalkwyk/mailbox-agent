@@ -35,9 +35,14 @@ def test_read_messages_selects_read_only_and_fetches_latest_with_peek() -> None:
         ("OK", [(b"2 (BODY[])", _raw_message("Previous", "previous body"))]),
     ]
 
-    with patch("mailbox_agent.imaplib.IMAP4_SSL", return_value=connection):
+    ssl_context = MagicMock()
+    with (
+        patch("mailbox_agent.ssl.create_default_context", return_value=ssl_context),
+        patch("mailbox_agent.imaplib.IMAP4_SSL", return_value=connection) as imap_ssl,
+    ):
         messages = read_messages("mail.example.com", 993, "user", "password", 2)
 
+    imap_ssl.assert_called_once_with("mail.example.com", 993, ssl_context=ssl_context)
     connection.login.assert_called_once_with("user", "password")
     connection.select.assert_called_once_with("INBOX", readonly=True)
     assert [message.subject for message in messages] == ["Latest", "Previous"]
