@@ -10,6 +10,7 @@ import pytest
 from mailbox_agent import (
     MailMessage,
     OpenRouterSummarizer,
+    _plain_text_body,
     load_config,
     read_messages,
     send_test_email,
@@ -23,6 +24,16 @@ def _raw_message(subject: str, body: str) -> bytes:
     message["Date"] = "Tue, 17 Nov 2026 10:00:00 +0000"
     message.set_content(body)
     return message.as_bytes(policy=policy.default)
+
+
+def test_plain_text_body_skips_attached_email_subtrees() -> None:
+    attached = email.message.EmailMessage()
+    attached.set_content("private attached message body")
+    message = email.message.EmailMessage()
+    message.set_content("visible message body")
+    message.add_attachment(attached, filename="private.eml")
+
+    assert _plain_text_body(message) == "visible message body"
 
 
 def test_read_messages_selects_read_only_and_fetches_latest_with_peek() -> None:

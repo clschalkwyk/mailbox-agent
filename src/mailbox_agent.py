@@ -85,13 +85,20 @@ def load_config() -> AgentConfig:
 
 def _plain_text_body(message: EmailMessage) -> str:
     """Extract non-attachment plain-text parts from a message."""
-    parts = message.walk() if message.is_multipart() else [message]
+
+    def body_parts(part: EmailMessage):
+        if part.get_content_disposition() == "attachment":
+            return
+        if part.get_content_type() == "text/plain":
+            yield part
+        elif part.is_multipart():
+            for child in part.iter_parts():
+                yield from body_parts(child)
+
     text_parts = [
         part.get_content()
-        for part in parts
-        if part.get_content_type() == "text/plain"
-        and part.get_content_disposition() != "attachment"
-        and isinstance(part.get_content(), str)
+        for part in body_parts(message)
+        if isinstance(part.get_content(), str)
     ]
     return "\n".join(text_parts).strip()
 
