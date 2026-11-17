@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mailbox-reader-agent"
+version = "0.1.0"
+description = "A read-only IMAP mailbox reader with OpenRouter summaries"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+mailbox-agent = "mailbox_agent:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["mailbox_agent"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
